@@ -63,6 +63,21 @@ def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
     pledge_dff['StatusQuo'] = status_quo_results['day_pledge_per_QAP']
     pledge_dff['date'] = pd.to_datetime(du.get_t(start_date, forecast_length=pledge_dff.shape[0]))
 
+    download_df = pd.DataFrame()
+    download_df['Date'] = pd.to_datetime(du.get_t(start_date, forecast_length=pledge_dff.shape[0]))
+    download_df['Baseline'] = baseline
+    download_df['RBP'] = status_quo_results['rb_total_power_eib']
+    download_df['QAP'] = status_quo_results['qa_total_power_eib']
+    download_df['block_reward'] = status_quo_results['block_reward']
+    download_df['day_pledge_per_QAP'] = status_quo_results['day_pledge_per_QAP']
+    csv = download_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download data as CSV",
+        data=csv,
+        file_name='network_kpis.csv',
+        mime='text/csv',
+    )
+
     # with col1:
     power_df = pd.melt(power_dff, id_vars=["date"], 
                         value_vars=[
