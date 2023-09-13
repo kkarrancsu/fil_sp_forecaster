@@ -45,6 +45,8 @@ def get_offline_data(start_date, current_date, end_date):
 
 
 def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
+    st.write(":red[Note that the forecasting provided here is contingent upon the assumptions made about the future behavior of storage providers. Please see the main page for more details on learning about the assumptions of the model. In addition to modeling assumptions, this forecast is made with a static onboarding/renewal/fil+ rate over the course of the simulation. In reality, these rates will change over time!]")
+
     # convert results dictionary into a dataframe so that we can use altair to make nice plots
     status_quo_results = scenario_results['status-quo']
     # col1 = st.columns(1)
@@ -262,6 +264,11 @@ def main():
         "current_date": current_date,
     }
 
+    # cache this for all possible settings of forecast length
+    for forecast_length_days in [365, 365*2, 365*3, 365*4, 365*5]:
+        end_date_cache = current_date + timedelta(days=forecast_length_days)
+        get_offline_data(start_date, current_date, end_date_cache)
+
     with st.sidebar:
         st.title('Filecoin Economics Explorer')
 
@@ -274,7 +281,7 @@ def main():
         
         st.button("Forecast", on_click=forecast_economy, kwargs=kwargs, key="forecast_button")
         st.slider("Forecast Length (Days)", 
-                  min_value=365, max_value=365*10, value=forecast_length_days, step=365, format='%d', key="forecast_length_slider",
+                  min_value=365, max_value=365*5, value=forecast_length_days, step=365, format='%d', key="forecast_length_slider",
                   on_change=forecast_economy, kwargs=kwargs, disabled=False, label_visibility="visible")
 
 if __name__ == '__main__':
