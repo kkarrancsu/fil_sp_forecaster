@@ -70,6 +70,7 @@ def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
     download_df['QAP (EiB)'] = status_quo_results['qa_total_power_eib']
     download_df['Block Reward'] = status_quo_results['block_reward']
     download_df['Pledge / 32 GiB Sector'] = status_quo_results['day_pledge_per_QAP']
+    download_df['day_rewards_per_sector'] = status_quo_results['day_rewards_per_sector']
     csv = download_df.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="Download data as CSV",
@@ -191,14 +192,15 @@ def run_sim(rbp, rr, fpr, lock_target, start_date, current_date, forecast_length
     # })
     return simulation_results #, yearly_returns_df
 
-def forecast_economy(start_date=None, current_date=None, end_date=None, forecast_length_days=365*6):
+def forecast_economy(start_date=None, current_date=None):    
+    forecast_length_days = st.session_state['forecast_length_slider']
+    end_date = current_date + timedelta(days=forecast_length_days)
+
     t1 = time.time()
     
     rb_onboard_power_pib_day =  st.session_state['rbp_slider']
     renewal_rate_pct = st.session_state['rr_slider']
     fil_plus_rate_pct = st.session_state['fpr_slider']
-    # cost_scaling_constant = st.session_state['cost_scaling_constant']
-    # filp_scaling_cost_pct = st.session_state['filp_scaling_cost_pct']
 
     lock_target = 0.3
     sector_duration_days = 360
@@ -244,49 +246,35 @@ def main():
         page_icon="🚀",  # TODO: can update this to the FIL logo
         layout="wide",
     )
+
     current_date = date.today() - timedelta(days=3)
     mo_start = max(current_date.month - 1 % 12, 1)
     start_date = date(current_date.year, mo_start, 1)
-    forecast_length_days=365
+    forecast_length_days = 365  # a noop here
     end_date = current_date + timedelta(days=forecast_length_days)
-    forecast_kwargs = {
-        'start_date': start_date,
-        'current_date': current_date,
-        'end_date': end_date,
-        'forecast_length_days': forecast_length_days,
-    }
 
     _, smoothed_last_historical_rbp, smoothed_last_historical_rr, smoothed_last_historical_fpr = get_offline_data(start_date, current_date, end_date)
     smoothed_last_historical_renewal_pct = int(smoothed_last_historical_rr * 100)
     smoothed_last_historical_fil_plus_pct = int(smoothed_last_historical_fpr * 100)
-    # d.debug('rbp:%0.02f, rr:%d, fpr:%d' % (smoothed_last_historical_rbp, smoothed_last_historical_rr, smoothed_last_historical_fpr))
-    # d.debug(smoothed_last_historical_rbp)
-    # d.debug(smoothed_last_historical_renewal_pct)
-    # d.debug(smoothed_last_historical_fil_plus_pct)
+
+    kwargs = {
+        "start_date": start_date,
+        "current_date": current_date,
+    }
 
     with st.sidebar:
         st.title('Filecoin Economics Explorer')
 
         st.slider("Raw Byte Onboarding (PiB/day)", min_value=3., max_value=50., value=smoothed_last_historical_rbp, step=.1, format='%0.02f', key="rbp_slider",
-                on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
+                on_change=forecast_economy, kwargs=kwargs, disabled=False, label_visibility="visible")
         st.slider("Renewal Rate (Percentage)", min_value=10, max_value=99, value=smoothed_last_historical_renewal_pct, step=1, format='%d', key="rr_slider",
-                on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
+                on_change=forecast_economy, kwargs=kwargs, disabled=False, label_visibility="visible")
         st.slider("FIL+ Rate (Percentage)", min_value=10, max_value=99, value=smoothed_last_historical_fil_plus_pct, step=1, format='%d', key="fpr_slider",
-                on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
+                on_change=forecast_economy, kwargs=kwargs, disabled=False, label_visibility="visible")
         
-        st.button("Forecast", on_click=forecast_economy, kwargs=forecast_kwargs, key="forecast_button")
-
-    
-    # if "debug_string" in st.session_state:
-    #     st.markdown(
-    #         f'<div class="debug">{ st.session_state["debug_string"]}</div>',
-    #         unsafe_allow_html=True,
-    #     )
-    # components.html(
-    #     d.js_code(),
-    #     height=0,
-    #     width=0,
-    # )
+        st.button("Forecast", on_click=forecast_economy, key="forecast_button")
+        st.slider("Forecast Length (Days)", 
+                  min_value=365, max_value=365*10, value=forecast_length_days, step=365, format='%d', key="forecast_length_slider")
 
 if __name__ == '__main__':
     main()
