@@ -45,7 +45,8 @@ def get_offline_data(start_date, current_date, end_date):
 
 
 def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
-    st.write(":red[Note that the forecasting provided here is contingent upon the assumptions made about the future behavior of storage providers. Please see the main page for more details on how to learn more about the modeling assumptions. Additionally, this forecast is made with a static onboarding/renewal/fil+ rate over the course of the simulation. In reality, these rates will change over time!]")
+    st.write(":red[## Disclaimer]")
+    st.write(":red[Note that the forecasting provided here is contingent upon the assumptions made about the future behavior of storage providers. Please see the main page for more details on how to learn more about the modeling assumptions. Additionally, this forecast is made with a static onboarding/renewal/fil+ rate over the course of the simulation. In reality, these are non-stationary time-varying signals that depend on many external factors. The forecast here is meant to understand potential bounds of future network state, and should not be taken as a precise prediction of the future.]")
 
     # convert results dictionary into a dataframe so that we can use altair to make nice plots
     status_quo_results = scenario_results['status-quo']
