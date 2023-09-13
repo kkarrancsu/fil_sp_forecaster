@@ -272,9 +272,10 @@ def main():
         st.slider("FIL+ Rate (Percentage)", min_value=10, max_value=99, value=smoothed_last_historical_fil_plus_pct, step=1, format='%d', key="fpr_slider",
                 on_change=forecast_economy, kwargs=kwargs, disabled=False, label_visibility="visible")
         
-        st.button("Forecast", on_click=forecast_economy, key="forecast_button")
+        st.button("Forecast", on_click=forecast_economy, kwargs=kwargs, key="forecast_button")
         st.slider("Forecast Length (Days)", 
-                  min_value=365, max_value=365*10, value=forecast_length_days, step=365, format='%d', key="forecast_length_slider")
+                  min_value=365, max_value=365*10, value=forecast_length_days, step=365, format='%d', key="forecast_length_slider",
+                  on_change=forecast_economy, kwargs=kwargs, disabled=False, label_visibility="visible")
 
 if __name__ == '__main__':
     main()
